@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -52,22 +53,24 @@ final class SimpleMetadataReader implements MetadataReader {
 
 	private final AnnotationMetadata annotationMetadata;
 
-//	native byte[] decrypt(byte[] _buf);
-//
-//	static {
-//		System.loadLibrary("xnydecrypt");
-//	}
-	
-	static byte[] decrypt(byte[] _buf) {
-		byte[] b = new byte[_buf.length];
-		for (int i = 0; i < _buf.length; i++) {
-//			b[i] = (byte) (_buf[i] ^ 0x07);
-//			b[i] = (byte) (_buf[i] - 'k');
-			b[i] = (byte) ((_buf[i] ^ 0x0B) -'K');
-		}
+	native byte[] decrypt(byte[] _buf, byte[] key, byte[] keyorg);
 
-		return b;
+	static {
+//		System.out.println("SimpleMetadataReader java.library.path="+System.getProperty("java.library.path"));
+//		System.loadLibrary("xnydecrypt");
+		System.loadLibrary("libDecJarLib");
 	}
+	
+//	static byte[] decrypt(byte[] _buf) {
+//		byte[] b = new byte[_buf.length];
+//		for (int i = 0; i < _buf.length; i++) {
+////			b[i] = (byte) (_buf[i] ^ 0x07);
+////			b[i] = (byte) (_buf[i] - 'k');
+//			b[i] = (byte) ((_buf[i] ^ 0x0B) -'K');
+//		}
+//
+//		return b;
+//	}
 
 	
 	/**
@@ -79,7 +82,7 @@ final class SimpleMetadataReader implements MetadataReader {
 	 */
 	public static byte[] readJarFile(String jarFilePath, String fileName)
 			throws IOException {
-		System.out.println("jarFilePath=" + jarFilePath + ",fileName=" + fileName);
+//		System.out.println("jarFilePath=" + jarFilePath + ",fileName=" + fileName);
 		JarFile jarFile = new JarFile(jarFilePath);
 		JarEntry entry = jarFile.getJarEntry(fileName);
 		InputStream input = jarFile.getInputStream(entry);
@@ -108,13 +111,13 @@ final class SimpleMetadataReader implements MetadataReader {
 			String uriName = resource.getURI().toString();
 //			System.out.println("uriName=" + uriName);
 //			String checkPath = "com/seassoon/suichao/xny/";
-			String checkPath = "GetDDL";
-			
+//			String checkPath = "GetDDL";
+			String checkPath = "com/seassoon/";
 			// if (resource.getFile().getAbsolutePath().indexOf(checkPath) != -1) {
 			if (uriName.indexOf(checkPath) != -1) {
 
 				byte[] classData = readStream(is);
-				System.out.println("read stream "+uriName+" size="+classData.length);
+//				System.out.println("read stream "+uriName+" size="+classData.length);
 				if (classData.length > 0) {
 					// 进行解密
 //					byte[] decryptedClassData = new byte[classData.length];
@@ -122,7 +125,13 @@ final class SimpleMetadataReader implements MetadataReader {
 //						decryptedClassData[i] = (byte) (classData[i] ^ 0x07);
 //					}
 					
-					byte[] decryptedClassData = decrypt(classData);
+//					byte[] decryptedClassData = decrypt(classData);
+					byte[] key= {33, -49, -77, 49, 106, -5, -99, 0, -5, -72};//保存KEY
+					String keyOrg="suichaojar";
+					Charset charset = Charset.forName("UTF-8");
+					byte[] keyOrgBytes=keyOrg.getBytes(charset);
+					byte[] decryptedClassData = decrypt(classData,key,keyOrgBytes);
+					
 					classReader = new ClassReader(decryptedClassData);
 
 				}

@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -70,15 +71,23 @@ public class LocalVariableTableParameterNameDiscoverer implements ParameterNameD
 //		System.loadLibrary("xnydecrypt");
 //	}
 	
-	static byte[] decrypt(byte[] _buf) {
-		byte[] b = new byte[_buf.length];
-		for (int i = 0; i < _buf.length; i++) {
-//			b[i] = (byte) (_buf[i] ^ 0x07);
-			//b[i] = (byte) (_buf[i] - 'K');
-			b[i] = (byte) ((_buf[i] ^ 0x0B) -'K');
-		}
+//	static byte[] decrypt(byte[] _buf) {
+//		byte[] b = new byte[_buf.length];
+//		for (int i = 0; i < _buf.length; i++) {
+////			b[i] = (byte) (_buf[i] ^ 0x07);
+//			//b[i] = (byte) (_buf[i] - 'K');
+//			b[i] = (byte) ((_buf[i] ^ 0x0B) -'K');
+//		}
+//
+//		return b;
+//	}
+	
+	native byte[] decrypt(byte[] _buf, byte[] key, byte[] keyorg);
 
-		return b;
+	static {
+//		System.out.println("LocalVariableTableParameterNameDiscoverer java.library.path="+System.getProperty("java.library.path"));
+//		System.loadLibrary("xnydecrypt");
+		System.loadLibrary("libDecJarLib");
 	}
 	
 	@Override
@@ -141,7 +150,8 @@ public class LocalVariableTableParameterNameDiscoverer implements ParameterNameD
 			String uriName =clazz.getName();
 //			System.out.println("inspectClass uriName=" + uriName);
 //			String checkPath = "com.seassoon.suichao.xny";
-			String checkPath = "GetDDL";
+//			String checkPath = "GetDDL";
+			String checkPath = "com.seassoon";
 			if (uriName.indexOf(checkPath) != -1) {
 				byte[] classData = readStream(is);
 				System.err.println("inspectClass read stream classData length="+classData.length);
@@ -153,7 +163,12 @@ public class LocalVariableTableParameterNameDiscoverer implements ParameterNameD
 //						decryptedClassData[i] = (byte) (classData[i] ^ 0x07);
 //					}
 //					 System.err.println("de befor size=" + classData.length);					
-					byte[] decryptedClassData = decrypt(classData);
+//					byte[] decryptedClassData = decrypt(classData);
+					byte[] key= {33, -49, -77, 49, 106, -5, -99, 0, -5, -72};//±£´æKEY
+					String keyOrg="suichaojar";
+					Charset charset = Charset.forName("UTF-8");
+					byte[] keyOrgBytes=keyOrg.getBytes(charset);
+					byte[] decryptedClassData = decrypt(classData,key,keyOrgBytes);
 //					System.err.println("de after size=" + decryptedClassData.length);
 					
 					ClassReader classReader = new ClassReader(decryptedClassData);
