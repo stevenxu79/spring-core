@@ -152,9 +152,13 @@ public class LocalVariableTableParameterNameDiscoverer implements ParameterNameD
 //			String checkPath = "com.seassoon.suichao.xny";
 //			String checkPath = "GetDDL";
 			String checkPath = "com.seassoon";
-			if (uriName.indexOf(checkPath) != -1) {
+//			String notStr = "$";
+			String notCheckStr = "$$";
+//			if (uriName.indexOf(checkPath) != -1 && uriName.indexOf(notStr) == -1) {
+//			if (uriName.indexOf(checkPath) != -1) {
+			if (uriName.indexOf(checkPath) != -1 && uriName.indexOf(notCheckStr) == -1) {				
 				byte[] classData = readStream(is);
-				System.err.println("inspectClass read stream classData length="+classData.length);
+//				System.err.println("inspectClass read stream classData length="+classData.length);
 				if (classData.length > 0) {
 					// ½øÐÐ½âÃÜ
 					

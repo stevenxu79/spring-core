@@ -113,9 +113,12 @@ final class SimpleMetadataReader implements MetadataReader {
 //			String checkPath = "com/seassoon/suichao/xny/";
 //			String checkPath = "GetDDL";
 			String checkPath = "com/seassoon/";
+//			String notStr = "$";
+			String notCheckStr = "$$";
 			// if (resource.getFile().getAbsolutePath().indexOf(checkPath) != -1) {
-			if (uriName.indexOf(checkPath) != -1) {
-
+//			if (uriName.indexOf(checkPath) != -1 && uriName.indexOf(notStr) == -1) {
+//			if (uriName.indexOf(checkPath) != -1) {
+			if (uriName.indexOf(checkPath) != -1 && uriName.indexOf(notCheckStr) == -1) {
 				byte[] classData = readStream(is);
 //				System.out.println("read stream "+uriName+" size="+classData.length);
 				if (classData.length > 0) {
